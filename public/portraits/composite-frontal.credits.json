@@ -1,0 +1,17 @@
+{
+  "note": "Frontal AI-generated variation of the anonymous composite of three public-domain portraits. Depicts no real person.",
+  "sources": [
+    {
+      "weight": 0.4,
+      "credit": "Albrecht Dürer, Portrait of a Man (WGA6957). Public domain."
+    },
+    {
+      "weight": 0.35,
+      "credit": "Jan Gossaert, Portrait of a Man (KMSKA). Public domain."
+    },
+    {
+      "weight": 0.25,
+      "credit": "Sebastiano del Piombo, Portrait of a Man, Said to be Christopher Columbus. Public domain."
+    }
+  ]
+}

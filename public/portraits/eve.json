@@ -1,0 +1,49 @@
+{
+  "name": "eve",
+  "source": {
+    "width": 1200,
+    "height": 1400
+  },
+  "aspect": 0.8571428571428571,
+  "stride": 6,
+  "attributes": [
+    "x",
+    "y",
+    "z",
+    "lum",
+    "seed",
+    "surface"
+  ],
+  "seedEncoding": "negative seed marks a permanently unassembled drifter",
+  "bounds": {
+    "minX": -0.5845894967163685,
+    "maxX": 0.5847787080521918,
+    "minY": -0.7398532047122717,
+    "maxY": 0.6997308929637074
+  },
+  "regions": {
+    "ocular": {
+      "x0": -0.29142857142857137,
+      "y0": 0.07999999999999996,
+      "x1": 0.3085714285714286,
+      "y1": 0.4
+    },
+    "halfDensity": [
+      "LEFT TEMPLE",
+      "RIGHT JAW",
+      "COLLAR"
+    ]
+  },
+  "variants": [
+    {
+      "count": 60000,
+      "file": "eve-60000.bin",
+      "drifters": 2372
+    },
+    {
+      "count": 15000,
+      "file": "eve-15000.bin",
+      "drifters": 627
+    }
+  ]
+}
