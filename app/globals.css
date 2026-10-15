@@ -161,6 +161,13 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent-bright);
 .analysis-summary dt, .analysis-summary dd { margin: 0; font-size: .54rem; letter-spacing: .07em; }
 .analysis-summary dt { color: var(--faint); }
 .analysis-summary dd { color: var(--accent-bright); }
+.content-assessment { grid-column: 1 / -1; border-left: 2px solid var(--line); padding: .55rem .75rem; background: var(--raised); }
+.content-assessment > span, .content-assessment > strong { display: block; font-size: .56rem; letter-spacing: .08em; }
+.content-assessment > span { margin-bottom: .25rem; color: var(--faint); }
+.content-assessment > strong { color: var(--accent-bright); }
+.content-assessment.is-violent { border-left-color: #d89c8b; }
+.content-assessment.is-violent > strong { color: #d89c8b; }
+.content-assessment p { margin-top: .4rem; }
 .custom-analysis details, .analysis-disclosure { grid-column: 1 / -1; }
 .custom-analysis summary { cursor: pointer; color: var(--accent); font-size: .58rem; letter-spacing: .08em; }
 .custom-analysis details p { margin-top: .5rem; }

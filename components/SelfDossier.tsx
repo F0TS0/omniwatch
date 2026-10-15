@@ -6,7 +6,7 @@ import OmniWatchFace from "@/components/OmniWatchFace";
 import { featuredBrowserSignals, featuredSignalLabels, readBrowserSignals, type ObservedSignal } from "@/lib/browser-signals";
 import { classificationIndex, targetBehaviours } from "@/lib/classification";
 import {
-  customEnforcementIndex,
+  customContextRelevance,
   eventAssessmentSchema,
   observedSignalCategories,
   type EventAssessment,
@@ -47,7 +47,7 @@ export default function SelfDossier() {
 
   const selected = useMemo(() => targetBehaviours.find((item) => item.value === event)!, [event]);
   const subjectEvent = event === "unknown" ? customEvent.trim() || "an undefined future event" : selected.label.toLowerCase();
-  const customMetrics = customAssessment && customEnforcementIndex(customAssessment, signals.length, trained);
+  const customMetrics = customAssessment && customContextRelevance(customAssessment);
   const index = event === "unknown"
     ? customMetrics?.index ?? 0
     : classificationIndex({ baseIndex: selected.baseIndex, observedSignalCount: signals.length, trained });
@@ -133,7 +133,7 @@ export default function SelfDossier() {
           </select>
           {event === "unknown" && <input aria-label="Custom event" value={customEvent} onChange={(e) => { setCustomEvent(e.target.value); setTrained(false); setCustomAssessment(null); setCustomAnalysisStatus("idle"); }} placeholder="Name the event" />}
           <p className="training-copy classification-rule"><span className="eyebrow">CLASSIFICATION RULE</span>Ordinary signals may be treated as preparation for this behaviour.</p>
-          <div className="risk-readout"><span>ENFORCEMENT INDEX</span><strong>{indexLabel}<small>/100</small></strong><i><b style={{ width: `${index}%` }} /></i><p className="index-disclaimer">Not a prediction of intent. It measures how much observed context this policy can interpret as relevant.</p></div>
+          <div className="risk-readout"><span>{event === "unknown" ? "BROWSER-CONTEXT RELEVANCE" : "ENFORCEMENT INDEX"}</span><strong>{indexLabel}<small>/100</small></strong><i><b style={{ width: `${index}%` }} /></i><p className="index-disclaimer">{event === "unknown" ? "Material relevance of generic browser-signal categories only. It does not assess intent or credibility." : "Not a prediction of intent. It measures how much observed context this policy can interpret as relevant."}</p></div>
           <button className="button button--solid" disabled={customAnalysisStatus === "loading"} onClick={trainClassification}>{customAnalysisStatus === "loading" ? "INTERPRETING POLICY…" : "TRAIN CLASSIFICATION"}</button>
           {customAnalysisStatus === "loading" && <p className="analysis-status">INTERPRETING POLICY…</p>}
           {customAnalysisStatus === "unavailable" && <p className="analysis-status is-error">CUSTOM EVENT ANALYSIS UNAVAILABLE</p>}
@@ -145,9 +145,14 @@ export default function SelfDossier() {
           <div><p className="eyebrow">CUSTOM EVENT ANALYSIS</p><h2 id="custom-analysis-title">{customAssessment.normalizedEvent}</h2><p>{customAssessment.interpretation}</p></div>
           <dl className="analysis-summary">
             <div><dt>OBSERVED SIGNALS</dt><dd>{signals.length}</dd></div>
-            <div><dt>POLICY-RELEVANT SIGNALS</dt><dd>{customMetrics.relevantSignalCount}</dd></div>
-            <div><dt>ENFORCEMENT INDEX</dt><dd>{customMetrics.index} / 100</dd></div>
+            <div><dt>MATERIALLY RELEVANT</dt><dd>{customMetrics.relevantSignalCount}</dd></div>
+            <div><dt>CONTEXT RELEVANCE</dt><dd>{customMetrics.index} / 100</dd></div>
           </dl>
+          <div className={`content-assessment ${customAssessment.contentAssessment.explicitViolentLanguage ? "is-violent" : ""}`}>
+            <span>CONTENT SIGNAL</span>
+            <strong>{customAssessment.contentAssessment.explicitViolentLanguage ? "EXPLICIT VIOLENT LANGUAGE DETECTED" : "NO EXPLICIT VIOLENT LANGUAGE DETECTED"}</strong>
+            <p>{customAssessment.contentAssessment.rationale} This describes the submitted wording only; intent and credibility remain unknown.</p>
+          </div>
           <details><summary>VIEW CATEGORY RATIONALES</summary>{customAssessment.signalAssessments.map((assessment) => <p key={assessment.signalCategory}><strong>{assessment.signalCategory.replaceAll("_", " ")}</strong> · {assessment.relevance} — {assessment.rationale}</p>)}</details>
           <p className="analysis-disclosure">YOUR CUSTOM SCENARIO WAS SENT TO THE AI PROVIDER FOR INTERPRETATION. RAW BROWSER SIGNAL VALUES WERE NOT SENT.</p>
         </section>
@@ -156,7 +161,10 @@ export default function SelfDossier() {
       <section className="dossier-verdict" aria-live="polite">
         <p className="eyebrow">{trained ? "SYSTEM INTERPRETATION" : "SYSTEM LIMIT"}</p>
         {trained ? (
-          <>
+          event === "unknown" && customAssessment && customMetrics ? <>
+            <p>{customAssessment.contentAssessment.explicitViolentLanguage ? "Explicit violent language was detected in the submitted text." : "No explicit violent language was detected in the submitted text."} This does not establish intent or credibility.</p>
+            <p>{customMetrics.relevantSignalCount === 0 ? "The observed browser categories provide no material supporting context." : `${customMetrics.relevantSignalCount} browser-signal ${customMetrics.relevantSignalCount === 1 ? "category was" : "categories were"} assessed as materially relevant.`} Nothing new was observed.</p>
+          </> : <>
             <p>The current evidence does not establish intent.</p>
             <p>However, under the selected enforcement policy, the same signals may now be treated as preparatory context for {subjectEvent}. Nothing new was observed.</p>
           </>
@@ -168,7 +176,7 @@ export default function SelfDossier() {
       {trained && (
         <section className="dossier-transition" aria-labelledby="transition-title">
           <h2 id="transition-title">YOU HAVE DONE NOTHING WRONG.</h2>
-          <p>No intent has been established. No offence has occurred. The system has only observed ordinary information and interpreted it according to the rules you gave it.</p>
+          <p>{event === "unknown" ? "No intent has been established. The submitted wording and browser categories were assessed separately; neither proves actual plans or conduct." : "No intent has been established. No offence has occurred. The system has only observed ordinary information and interpreted it according to the rules you gave it."}</p>
           <p className="transition-pivot">OBSERVATION IS NOT ENFORCEMENT.</p>
           <p>What changes when the system is allowed to act?</p>
           <Link className="button button--solid" href="/enforcement">TEST PERFECT ENFORCEMENT</Link>

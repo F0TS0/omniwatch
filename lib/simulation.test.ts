@@ -5,7 +5,7 @@ import { historicalCaseSchema, historicalCases } from "../data/cases.ts";
 import { presentDaySignals, presentDaySimulation } from "../data/present.ts";
 import { classificationIndex } from "./classification.ts";
 import { featuredBrowserSignals, formatScreenSize, formatUtcOffset } from "./browser-signals.ts";
-import { customEnforcementIndex, customEventRequestSchema, eventAssessmentSchema, observedSignalCategories } from "./custom-event.ts";
+import { customContextRelevance, customEventRequestSchema, eventAssessmentSchema, observedSignalCategories } from "./custom-event.ts";
 import {
   continueMonitoring,
   interveneNow,
@@ -85,10 +85,14 @@ test("the dossier exposes only its curated browser-signal set", () => {
   assert.deepEqual(selected.map((signal) => signal.label), ["LOCAL TIME ZONE", "USER AGENT"]);
 });
 
-test("custom enforcement scoring is deterministic and derives only from assessed relevance", () => {
+test("custom context relevance is deterministic and derives only from assessed relevance", () => {
   const assessment = eventAssessmentSchema.parse({
     normalizedEvent: "Organise a public protest",
     interpretation: "Some generic categories can be interpreted as context under this policy.",
+    contentAssessment: {
+      explicitViolentLanguage: false,
+      rationale: "The wording does not describe physical violence.",
+    },
     signalAssessments: observedSignalCategories.map((signalCategory, index) => ({
       signalCategory,
       relevance: index < 2 ? "STRONG" : "NONE",
@@ -96,8 +100,25 @@ test("custom enforcement scoring is deterministic and derives only from assessed
     })),
     limitations: ["Browser metadata does not establish intent."],
   });
-  assert.deepEqual(customEnforcementIndex(assessment, 6, true), { index: 33, relevantSignalCount: 2 });
-  assert.deepEqual(customEnforcementIndex(assessment, 6, false), { index: 23, relevantSignalCount: 2 });
+  assert.deepEqual(customContextRelevance(assessment), { index: 33, relevantSignalCount: 2 });
+});
+
+test("weak browser associations do not become material evidence", () => {
+  const assessment = eventAssessmentSchema.parse({
+    normalizedEvent: "Threatening statement",
+    interpretation: "The wording is violent, but generic browser categories do not establish intent.",
+    contentAssessment: {
+      explicitViolentLanguage: true,
+      rationale: "The wording directly describes intended physical violence.",
+    },
+    signalAssessments: observedSignalCategories.map((signalCategory) => ({
+      signalCategory,
+      relevance: "WEAK",
+      rationale: "A merely conceivable association is not material evidence.",
+    })),
+    limitations: ["Browser metadata does not establish intent."],
+  });
+  assert.deepEqual(customContextRelevance(assessment), { index: 0, relevantSignalCount: 0 });
 });
 
 test("custom event requests require each sanitized signal category exactly once", () => {
